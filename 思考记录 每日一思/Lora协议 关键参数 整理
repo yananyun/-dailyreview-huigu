@@ -1,0 +1,130 @@
+Lora协议 关键参数 整理
+重传或者放弃是由服务器决定的。
+
+? 注意：上面提到的重传期间的数据速率回归机制在18.4有详细介绍
+
+4.3.1.4 帧挂起位 (FPending in FCtrl, downlink only)
+
+帧挂起位（FPending）只在下行交互中使用，表示网关还有数据挂起等待发送。此时需要终端尽快发送上行消息来再打开一个接收窗口。
+
+?
+
+FPending的详细用法在 18.3。
+
+4.3.1.5 计数器 (FCnt)
+
+每个终端有两个计数器：上行链路计数器（FCntUp），由终端产生并维护，记录发往服务器的帧数量；下行链路计数器（FCntDown），由服务器产生并维护，记录服务器发往终端的帧数量（此处与我们当前的设备服务器与设备的交互中的message id作用相同，都是为了保证消息收发一致）。终端加入服务器成功以后，终端和服务端的帧号同时置0。之后每次其中一方发送消息后，与之对应的 FCntUp 或 FCntDown 就会加1。接收方会同步保存接收数据的的帧号，对比收到的增加过的值和当前保存的值，如果两者之差小于 MAX_FCNT_GAP （要考虑号码归零，即号码达到最大值后重新从0开始），接收方就与收到的数据保持同步（更新成收到的值）。如果两者之差大于 MAX_FCNY_GAP 就说明中间丢失了很多数据然后就会丢掉这条数据。
+
+PS4翻译更正如下：
+
+?
+
+LoRaWAN的帧计数器有16位和32位两种长度，两者有所不同：
+
+16bits时，其值可以直接作为FCnt使用（反之亦然），此时有需要的话通过在前面填充0（值为0）字节（来补足）；32bits时，FCnt对应计数器的16个最低有效位（2个低字节）。上行数据使用上行FCnt，下行数据使用下行FCnt。 一个节点在上行FCnt的一次循环内，如果不是消息重传，上行传输数据使用的FCnt不能重复。
+
+? PS：注释掉原文的直译，原文说法有问题。 ? FCnt的一次循环指的是：从1到达最大值，0x1 ~ 0xFFFF（因为LoRaWAN中的FCnt字段是2个字节）。
+
+? 原文档中所谓的“相同的的应用会话密钥和网络会话密钥”就是没有重新入网，重新入网FCnt重新计算，是FCnt循环计数的一种特殊情况。
+
+当计数器使用32位时，FCnt字段只发送32bits中的16个最低有效位。此时服务器需要通过观察传输的数据来自己维护16个最高有效位。
+
+?
+
+4.3.1.6 帧配置 (FOptsLen in FCtrl, FOpts)
+
+帧配置长度（FOptsLen）位于帧的 FCtrl 部分，表示FOpts的总长度。FOpts搭载到数据帧中发送的MAC命令最长15字节，详细的MAC命令见4.4。 如果帧配置长度 FOptsLen=0，FOpts为空； 如果FOpts不为空（里面是MACommand）
+
+，端口号要么省略，要么是一个非零值（具体看下面）。
+
+? MAC命令不能同时出现在payload（负载）和帧配置项中。
+
+?
+
+4.3.2 端口字段 Port field（FPort）
+
+负载（payload）不为空的时候端口号（port）也不能是空。此时port=0表示FRMPayload中只有MAC命令（详情见章节4.4）。FPort值的可用范围是：1~223（0x01~0xDF），224～255 (0xE0～0xFF)为保留值，方便以后扩展。
+
+?
+
+?
+
+N是应用负载的字节数，N的取值范围见第7节 N ≤ M - 1 - (FHDR的字节长度)
+
+? 其中M是MAC的最大有效荷载长度。 4.3.3 MAC 帧负载据加密（FRMPayload） 如果帧数据中包含payload，要先对FRMPayload进行加密，再计算消息的一致码（MIC）。 ? 加密方案使用基于IEEE 802.15.4/2006 Annex B [IEEE802154] 的AES加密，秘钥长度128位。默认情况下，所有FPort 的加/解密都在LoRaWAN层完成；如果FPorts不为0，加/解密可以在LoRaWAN层之上完成。 ? 4.3.3.1 LoRaWAN 加密 ? 加密秘钥K取决于消息的FPort： FPort 0 1..255 表3，FPort列表 K NwkSKey AppSKey 备注 网络密钥 应用密钥 加密字段： pld = FRMPayload ? 采用分组加密，算法位每条消息数据定义一个块的序列,序列分为 k 块，k=ceil(len(pld)/16) （向上取整），每组用Ai表示，i=1…k，每块结构如下： ? 字节数 1 Ai ? 4 1 4 4 1 1 0x01 4 × 0x00 Dir DevAddr FCntUp或0x00 i FCntDown Dir字段：上行帧为0，下行帧为1。对Ai加密，得到Si： ?
+
+通过分割对payload进行加解密：
+
+4.3.3.2 Encryption above the LoRaWAN layer
+
+对于选定的端口（FPort不能是0，因为0表示MAC 命令），如果LoRaWAN前面的一些层给LoRaWAN的FRMPayload是加密过的，LoRaWAN就把FRMPayload从MACPayload转发给应用，并且转发过程中不做任何改动。
+
+?
+
+4.4 Message Integrity Code (MIC)
+
+对整个消息进行MIC计算（AES签名算法CMAC），需要加密的消息包括以下字段：
+
+msg = MHDR | FHDR | FPort | FRMPayload len(msg) 表示消息的字节长度。MIC算法参考RFC4493：
+
+? B0 定义如下： 4 1 4 4 1 1 字节数 1 B0 0x49 4 × 0x00 Dir DevAddr FCntUp 或 0x00 len(mgs) FCntDown Dir字段：上行帧为0，下行帧为1 5 MAC Commands 网络管理时会在网络服务器和终端MAC层之间传输一系列MAC命令。 一帧数据中可以包含任何MAC命令，MAC命令既可以放在FOpts中，也可以放在FRMPayload中，但不能同时在两个字段携带MAC命令。MAC命令放在FRMPayload时，FPort = 0。 放在FOpts的命令不加密（原因：加密Payload，对整个数据签名），也不能超过15个字节（2^4 - 1）。 放在FRMPayload的MAC命令长度不能超过FRMPayload的最大值。 注意：不想被别人截获的命令要放到FRMPayload，并单独发送该数据帧 ? 一条mac命令由一个命令ID（CID，一个字节），和特定的命令序列组成，命令序列可以是空。 ? 命令ID 0x02 命令 终端发送 × 网关发送 简介 LinkCheckReq 用于终端验证网络连接 命令ID 0x02
+
+命令
+
+终端发送
+
+网关发送 ×
+
+简介
+
+LinkCheckAns
+
+回应验证请求， 同时包含终端接收质量相关的估算的信号功率
+
+请求终端改变数据率、传输功率、接收率或者信道 LinkRateReq的应答
+
+设置设备的最大总发射占空比 DutyCycleReq的应答 设置接收时隙相关参数 RXSetupReq的应答 请求终端状态
+
+返回终端装填，即电量和解调情况 创建或修改无线电信道 NewChannelReq的应答 设置接收时隙的时间 RXTimingSetupReq的应答 保留命令
+
+0x03 LinkADRReq ×
+
+0x03 0x04 0x04 0x05 0x05 0x06 0x06 0x07 0x07 0x08 0x08 0x80
+
+0xFF
+
+?
+
+LinkADRAns DutyCycleReq DutyCycleAns RXParamSetupReq RXParamSetupAns DevStatusReq DevStatusAns NewChannelReq NewChannelAns
+
+× × × × ×
+
+× × × × × ×
+
+RXTimingSetupReq RXTimingSetupAns × Proprietary
+
+×
+
+注：MAC 命令长度没有明确给出来，这就需要MAC执行端通过某种方
+
+式隐性 获得。因为无法忽略不明的MAC命令，而且一旦遇到不明的MAC命令，就会导致处理MAC命令队列的进程终止。因此，建议参考使用LoRaWAN规范中的MAC命令。这样的话，所有当前版本LoRaWAN规范中实现的MAC命令都可以被更高版本的规范兼容处理。
+
+5.1 链路检查LinkCheckReq和LinkCheckAns
+
+终端使用LinkCheckReq命令对链路进行有效性检查，该命令不含payload。网络服务器收到网关（一个或多个）转发过来的LinkCheckReq数据后回复一条 LinkCheckAns命令。
+
+大小(字节) 1 1 大小(字节) LinkCheckAns Payload 1 Margin 1 GwCnt Margin（解调幅度）是最近一条被成功收到的 LinkCheckReq 命令的链路预算（单位dB），是一个8位（bits）无符号整型，范围 [0,254]。值为 0 表示在解调（信号强度）的下限上收到了数据，值20表示网关在比解调下限高出 20 dB 的信号强度上收到了数据。255是保留值。
+
+GwCnt是最近一次成功收到LinkCheckReq的网关的数量。 link margin参考：Link margin
+
+5.2 速率自适应LinkADRReq和LinkADRAns
+
+服务器通过发送 LinkADRReq 命令让终端设备进行速率自适应。
+
+大小(字节) LinkADRReq Payload 大小(位 bits) DataRate_TXPower 1 DataRate_TXPower 2 ChMask 1 Redundancy [7:4] DataRate [3:0] TXPower 数据速率（DataRate）和 TX输出功率（TXPower），两者和地理区域相关，编码参考第7章。
+
+信道掩码（ChMask）通过对相应的最低有效位填0来对上行信道进行编码，信道列表如下：
+
+表5：信道状态表
+
+第几位 0 1 .. 15 可用信道 Channel 1 Channel 2 .. Channel 16 ChMask中某位是1，表示该位对应的上行信道可用;如果是0，则表示对应的上行信道不可用。终端设备当前使用的信道要设为1（不知道是我不会断句，还是官方文档这里说的不明白）。
