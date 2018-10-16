@@ -1,0 +1,16 @@
+netstat -m 看tcp 的 mbuf TCP/IP详解 IP编址 P126
+Last login: Tue Oct 16 14:19:56 on ttys000
+macserver:~ admindyn$ netstat -m
+1009/2019 mbufs in use:
+	769 mbufs allocated to data
+	240 mbufs allocated to packet tags
+	1010 mbufs allocated to caches
+765/1602 mbuf 2KB clusters in use
+0/328 mbuf 4KB clusters in use
+0/125 mbuf 16KB clusters in use
+7230 KB allocated to network (25.1% in use)
+0 KB returned to the system
+0 requests for memory denied
+0 requests for memory delayed
+0 calls to drain routines
+macserver:~ admindyn$ 
