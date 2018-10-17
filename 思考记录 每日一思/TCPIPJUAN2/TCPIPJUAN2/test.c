@@ -10,8 +10,8 @@
  重 点 在 目 录 netinet ， 它 包 含 所 有 TCP/IP 源 代 码 。 在 目 录 kern 和 net 中我们也可 找到一些文件。前者是协议无关的插口代码，而后者是一些通用联网函数，用于 TCP/IP 例程， 如路由代码。
  */
 
-#include <stdarg.h>
-#include <errno.h>
+#include "err_debug.h"
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -21,40 +21,10 @@
 #include <string.h>
 #include "test.h"
 
-#define MAXLINE 1024
+
 
 #define BUFFSIZE 150
 
-static void err_doit(int, int, const char *, va_list);
-/*
- * Print a message and return to caller.
- * Caller specifies "errnoflag".
- */
-static void
-err_doit(int errnoflag, int error, const char *fmt, va_list ap)
-{
-    char buf[MAXLINE];
-    vsnprintf(buf, MAXLINE, fmt, ap);
-    if (errnoflag)
-        snprintf(buf+strlen(buf), MAXLINE-strlen(buf), ": %s",
-                 strerror(error));
-    strcat(buf, "\n");
-    fflush(stdout); /* in case stdout and stderr are the same */
-    fputs(buf, stderr);
-    fflush(NULL); /* flushes all stdio output streams */
-}
-
-
-void
-err_sys(const char *fmt, ...)
-{
-    va_list ap;
-    
-    va_start(ap, fmt);
-    err_doit(1, errno, fmt, ap);
-    va_end(ap);
-
-}
 
 int test()
 {
