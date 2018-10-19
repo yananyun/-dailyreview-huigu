@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EC07408F21783DAF00D8687B /* IPBianZhi.c in Sources */ = {isa = PBXBuildFile; fileRef = EC07408D21783DAF00D8687B /* IPBianZhi.c */; };
+		EC0740922178417900D8687B /* socketprogram.c in Sources */ = {isa = PBXBuildFile; fileRef = EC0740902178417900D8687B /* socketprogram.c */; };
 		EC7F31022176D66100BB6345 /* unixclient.c in Sources */ = {isa = PBXBuildFile; fileRef = EC7F31002176D66100BB6345 /* unixclient.c */; };
 		EC7F31052176D6EC00BB6345 /* cliserv.c in Sources */ = {isa = PBXBuildFile; fileRef = EC7F31032176D6EC00BB6345 /* cliserv.c */; };
 		EC7F31082176D7F800BB6345 /* err_debug.c in Sources */ = {isa = PBXBuildFile; fileRef = EC7F31062176D7F800BB6345 /* err_debug.c */; };
@@ -33,6 +35,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		EC07408D21783DAF00D8687B /* IPBianZhi.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = IPBianZhi.c; sourceTree = "<group>"; };
+		EC07408E21783DAF00D8687B /* IPBianZhi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPBianZhi.h; sourceTree = "<group>"; };
+		EC0740902178417900D8687B /* socketprogram.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = socketprogram.c; sourceTree = "<group>"; };
+		EC0740912178417900D8687B /* socketprogram.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = socketprogram.h; sourceTree = "<group>"; };
 		EC7F31002176D66100BB6345 /* unixclient.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = unixclient.c; sourceTree = "<group>"; };
 		EC7F31012176D66100BB6345 /* unixclient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unixclient.h; sourceTree = "<group>"; };
 		EC7F31032176D6EC00BB6345 /* cliserv.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cliserv.c; sourceTree = "<group>"; };
@@ -90,6 +96,10 @@
 				EC8FB6D12175C8B7002A9669 /* main.c */,
 				EC7F31002176D66100BB6345 /* unixclient.c */,
 				EC7F31012176D66100BB6345 /* unixclient.h */,
+				EC0740902178417900D8687B /* socketprogram.c */,
+				EC0740912178417900D8687B /* socketprogram.h */,
+				EC07408D21783DAF00D8687B /* IPBianZhi.c */,
+				EC07408E21783DAF00D8687B /* IPBianZhi.h */,
 				EC7F311521773F5300BB6345 /* ttcpcli.c */,
 				EC7F311621773F5300BB6345 /* ttcpcli.h */,
 				EC7F311221773F4100BB6345 /* ttcpserv.c */,
@@ -170,6 +180,7 @@
 			files = (
 				EC7F31022176D66100BB6345 /* unixclient.c in Sources */,
 				EC7F311721773F5300BB6345 /* ttcpcli.c in Sources */,
+				EC07408F21783DAF00D8687B /* IPBianZhi.c in Sources */,
 				EC7F31112177365300BB6345 /* tcpserv.c in Sources */,
 				EC7F31082176D7F800BB6345 /* err_debug.c in Sources */,
 				EC7F31052176D6EC00BB6345 /* cliserv.c in Sources */,
@@ -179,6 +190,7 @@
 				EC7F310E217733BF00BB6345 /* tcpcli.c in Sources */,
 				EC8FB6DD2175C8F9002A9669 /* tcp_subr.c in Sources */,
 				EC7F311421773F4100BB6345 /* ttcpserv.c in Sources */,
+				EC0740922178417900D8687B /* socketprogram.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

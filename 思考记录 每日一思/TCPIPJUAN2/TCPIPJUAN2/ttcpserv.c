@@ -25,6 +25,9 @@ int testttcpserver()
         err_sys("socket error");
     }
     /*
+     当客户程序仅调用一次 sendto 函数发出请求时，通常应该设置 TCP_NOPUSH 插口选项。这样，当请求长度超过报文段最大长度 MSS时 ， 协议就会尽可能发出满长度的报文段。这样可以减少报文段的数量，减少的程度取决于每次发送的数据量
+     */
+    /*
      用服务器IP地址与端口号 填充网卡地址接口结构体
      */
     memset(&serv, 0, sizeof(serv));

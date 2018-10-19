@@ -19,12 +19,26 @@
  */
 #include <sys/types.h>
 #include <sys/socket.h>
+/*t/tcp*/
+#include <sys/protosw.h>
+
+//
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+/*socket选项*/
+#include <sys/stat.h>
+#include <fcntl.h>
+/*整型兼容*/
+#include <inttypes.h>
+#include <stdint.h>
+/*tcp选项*/
+#include <sys/wait.h>
+#include <netinet/tcp.h>
+#include <netinet/tcp_timer.h>
 
 #define REQUEST 400
 #define REPLY 400
